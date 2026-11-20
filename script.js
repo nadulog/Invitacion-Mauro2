@@ -1,14 +1,16 @@
 (() => {
-  const toast = document.getElementById("toast");
+  const root = document.documentElement;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const rand = (a, b) => a + Math.random() * (b - a);
 
   /* ---------- Aviso ---------- */
+  const toast = document.getElementById("toast");
   let toastTimer;
   const showToast = (msg) => {
     toast.textContent = msg;
     toast.classList.add("is-visible");
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2600);
+    toastTimer = setTimeout(() => toast.classList.remove("is-visible"), 2800);
   };
 
   /* ---------- Nombres de invitados ----------
@@ -17,22 +19,16 @@
   const guestEl = document.getElementById("nombres-invitados");
   const fitGuestNames = () => {
     const len = guestEl.textContent.trim().length;
-    guestEl.classList.toggle("is-long", len > 12 && len <= 20);
-    guestEl.classList.toggle("is-very-long", len > 20);
+    guestEl.classList.toggle("is-long", len > 12 && len <= 22);
+    guestEl.classList.toggle("is-very-long", len > 22);
   };
   new MutationObserver(fitGuestNames).observe(guestEl, { childList: true, characterData: true, subtree: true });
 
-  /* ---------- Cuenta regresiva: sábado 23 de enero de 2027, 21:00 (hora Argentina) ---------- */
+  /* ---------- Cuenta regresiva: sábado 23 de enero de 2027, 21:00 (Argentina) ---------- */
   const target = new Date("2027-01-23T21:00:00-03:00").getTime();
   const cd = ["cdDays", "cdHours", "cdMinutes", "cdSeconds"].map((id) => document.getElementById(id));
   const pad = (n) => String(n).padStart(2, "0");
-  // Aguja del cronómetro: marca los segundos reales, siempre avanzando (nunca vuelve para atrás)
-  const hand = document.getElementById("watchHand");
-  const handStart = Math.floor(Date.now() / 1000);
-  const handOffset = new Date().getSeconds();
   const tick = () => {
-    const nowSec = Math.floor(Date.now() / 1000);
-    hand.style.transform = `rotate(${(nowSec - handStart + handOffset) * 6}deg)`;
     const s = Math.floor(Math.max(0, target - Date.now()) / 1000);
     [Math.floor(s / 86400), Math.floor((s % 86400) / 3600), Math.floor((s % 3600) / 60), s % 60].forEach((v, i) => {
       const text = pad(v);
@@ -48,45 +44,31 @@
   tick();
   setInterval(tick, 1000);
 
-  /* ---------- Papelitos azul y oro en la portada ----------
-     Cada papelito cae a ritmo parejo (<i>), se hamaca de lado a lado y da vueltas
-     en el aire mostrando el brillo de sus dos caras (<b>), como el papel picado de verdad. */
+  /* ---------- Lucecitas doradas que suben en la portada ---------- */
   if (!reducedMotion) {
-    const box = document.querySelector(".papelitos");
-    const colors = [
-      "linear-gradient(135deg, #f8e2a2, #c9973f)",
-      "linear-gradient(135deg, #fff1c4, #e2b765)",
-      "linear-gradient(135deg, #e9c574, #a8741f)",
-      "linear-gradient(135deg, #3a63c9, #1d3b8a)",
-      "linear-gradient(135deg, #5a7fe0, #2a4fb0)",
-      "linear-gradient(135deg, #ffffff, #e9dcc0)",
-    ];
-    const rand = (a, b) => a + Math.random() * (b - a);
-    for (let i = 0; i < 34; i++) {
-      const p = document.createElement("i");
-      const b = document.createElement("b");
-      const fall = rand(4.2, 6.4);
-      p.style.setProperty("--x", `${rand(-2, 100)}%`);
-      p.style.setProperty("--t", `${fall}s`);
-      p.style.setProperty("--d", `${-rand(0, fall)}s`);
-      b.style.setProperty("--w", `${rand(1.6, 2.8)}cqw`);
-      b.style.setProperty("--h", `${rand(0.45, 0.7)}`);
-      b.style.setProperty("--c", colors[i % colors.length]);
-      b.style.setProperty("--sway", `${rand(2.5, 6)}cqw`);
-      b.style.setProperty("--s", `${rand(0.9, 1.6)}s`);
-      b.style.setProperty("--sd", `${-rand(0, 1.6)}s`);
-      b.style.setProperty("--f", `${rand(0.8, 1.8)}s`);
-      b.style.setProperty("--rx", rand(0.3, 1).toFixed(2));
-      b.style.setProperty("--ry", rand(0.2, 1).toFixed(2));
-      b.style.setProperty("--dir", Math.random() < 0.5 ? "normal" : "reverse");
-      p.append(b);
-      box.append(p);
+    const bokeh = document.querySelector(".bokeh");
+    const colors = ["rgba(255, 220, 150, 0.9)", "rgba(255, 236, 190, 0.9)", "rgba(120, 160, 255, 0.85)"];
+    for (let i = 0; i < 16; i++) {
+      const dot = document.createElement("i");
+      const t = rand(9, 16);
+      dot.style.cssText = `--x:${rand(0, 96)}%;--size:${rand(1.2, 3.6)}cqw;--c:${colors[i % 3]};--t:${t}s;--d:${-rand(0, t)}s;--dx:${rand(-8, 8)}cqw;--o:${rand(0.45, 0.9).toFixed(2)}`;
+      bokeh.append(dot);
+    }
+
+    /* Reflejos de bola de disco que barren la pantalla de invitados */
+    const glints = document.querySelector(".glints");
+    const glintColors = ["rgba(255, 245, 220, 0.95)", "rgba(150, 185, 255, 0.95)", "rgba(255, 215, 140, 0.95)"];
+    for (let i = 0; i < 22; i++) {
+      const g = document.createElement("i");
+      const t = rand(7, 12);
+      g.style.cssText = `--y:${rand(2, 98)}%;--size:${rand(0.8, 2)}cqw;--c:${glintColors[i % 3]};--t:${t}s;--d:${-rand(0, t)}s;--r:${rand(-20, 20)}deg;--o:${rand(0.35, 0.8).toFixed(2)}`;
+      glints.append(g);
     }
   }
 
   /* ---------- Fotos dentro de las polaroid ----------
      Deforma cada recuadro para que sus 4 esquinas caigan sobre las de la ventana
-     de la foto en la imagen (perspectiva), y lo recalcula si cambia el tamaño. */
+     de la foto en el diseño (perspectiva), y lo recalcula si cambia el tamaño. */
   const quadMatrix = (w, h, p) => {
     const [[x0, y0], [x1, y1], [x2, y2], [x3, y3]] = p;
     const dx1 = x1 - x2, dx2 = x3 - x2, dx3 = x0 - x1 + x2 - x3;
@@ -99,20 +81,23 @@
     return `matrix3d(${[a / w, d / w, 0, g / w, b / h, e / h, 0, hh / h, 0, 0, 1, 0, x0, y0, 0, 1].join(",")})`;
   };
   const pols = document.querySelectorAll(".pol");
+  const keepStage = document.querySelector(".panel--keep .stage");
   const placePols = () => {
+    const scale = keepStage.clientWidth / 941;
+    if (!scale) return;
     pols.forEach((pol) => {
-      const scale = pol.parentElement.clientWidth / 941;
       const quad = pol.dataset.quad.split(" ").map((pt) => pt.split(",").map((n) => Number(n) * scale));
       pol.style.transform = quadMatrix(pol.offsetWidth, pol.offsetHeight, quad);
+      pol.classList.add("is-placed");
     });
   };
   placePols();
-  if ("ResizeObserver" in window) new ResizeObserver(placePols).observe(pols[0].parentElement);
+  if ("ResizeObserver" in window) new ResizeObserver(placePols).observe(keepStage);
   else addEventListener("resize", placePols);
 
   /* ---------- Aparición de textos ---------- */
   if (!reducedMotion && "IntersectionObserver" in window) {
-    document.documentElement.classList.add("js-reveal");
+    root.classList.add("js-reveal");
     const io = new IntersectionObserver((entries) => {
       entries.forEach((e) => {
         if (!e.isIntersecting) return;
@@ -121,11 +106,83 @@
       });
     }, { threshold: 0.3 });
     document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+    // Cada sección se "enciende" cuando entra en pantalla
+    const lightIo = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return;
+        e.target.classList.add("is-lit");
+        lightIo.unobserve(e.target);
+      });
+    }, { threshold: 0.35 });
+    document.querySelectorAll(".panel").forEach((el) => {
+      if (el.classList.contains("panel--cover")) el.classList.add("is-lit");
+      else lightIo.observe(el);
+    });
   }
 
-  /* ---------- Música de fondo ----------
-     Los celulares no dejan que suene sola: arranca cuando el invitado elige
-     "Entrar con música" en la intro, y después se prende o apaga con el botón dorado. */
+  /* ---------- Polvo dorado flotando sobre toda la invitación ----------
+     Una sola capa fija: acompaña al invitado mientras baja y une las secciones. */
+  if (!reducedMotion) {
+    const canvas = document.createElement("canvas");
+    canvas.className = "dust";
+    canvas.setAttribute("aria-hidden", "true");
+    document.body.append(canvas);
+    const ctx = canvas.getContext("2d");
+    let W = 0, H = 0, dpr = 1, motes = [], lastScroll = window.scrollY, drift = 0;
+    const resize = () => {
+      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      W = canvas.clientWidth; H = canvas.clientHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const count = Math.round(Math.min(60, (W * H) / 9000));
+      motes = Array.from({ length: count }, () => ({
+        x: rand(0, W), y: rand(0, H), r: rand(0.6, 2.1), vy: rand(-0.25, -0.06), vx: rand(-0.12, 0.12),
+        a: rand(0.25, 0.85), tw: rand(0, Math.PI * 2), ts: rand(0.01, 0.035), depth: rand(0.3, 1),
+        hue: Math.random() < 0.8 ? [255, 222, 160] : [170, 195, 255],
+      }));
+    };
+    resize();
+    addEventListener("resize", resize);
+    // Al deslizar, las partículas se mueven un poco más (efecto profundidad)
+    addEventListener("scroll", () => { drift += (window.scrollY - lastScroll) * 0.25; lastScroll = window.scrollY; }, { passive: true });
+    const frame = () => {
+      ctx.clearRect(0, 0, W, H);
+      drift *= 0.9;
+      for (const m of motes) {
+        m.x += m.vx; m.y += m.vy - drift * 0.02 * m.depth; m.tw += m.ts;
+        if (m.y < -10) { m.y = H + 10; m.x = rand(0, W); }
+        if (m.y > H + 10) { m.y = -10; m.x = rand(0, W); }
+        if (m.x < -10) m.x = W + 10; else if (m.x > W + 10) m.x = -10;
+        const alpha = m.a * (0.55 + 0.45 * Math.sin(m.tw));
+        const [r, g, b] = m.hue;
+        const grad = ctx.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r * 3.2);
+        grad.addColorStop(0, `rgba(255,255,255,${alpha})`);
+        grad.addColorStop(0.3, `rgba(${r},${g},${b},${alpha * 0.8})`);
+        grad.addColorStop(1, `rgba(${r},${g},${b},0)`);
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(m.x, m.y, m.r * 3.2, 0, Math.PI * 2); ctx.fill();
+      }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+
+    /* Chispas doradas donde el invitado toca */
+    const sparkColors = ["#ffe6a8", "#f2c869", "#ffffff", "#9fb8ff"];
+    addEventListener("pointerdown", (e) => {
+      for (let i = 0; i < 12; i++) {
+        const s = document.createElement("i");
+        const ang = (i / 12) * Math.PI * 2 + rand(-0.3, 0.3);
+        const dist = rand(28, 62);
+        s.className = "spark";
+        s.style.cssText = `left:${e.clientX}px;top:${e.clientY}px;--c:${sparkColors[i % 4]};--dx:${Math.cos(ang) * dist}px;--dy:${Math.sin(ang) * dist}px`;
+        document.body.append(s);
+        setTimeout(() => s.remove(), 900);
+      }
+    }, { passive: true });
+  }
+
+  /* ---------- Música de fondo ---------- */
   const music = document.getElementById("bgMusic");
   const musicBtn = document.getElementById("musicToggle");
   const setMusicUi = (playing) => {
@@ -140,13 +197,16 @@
   };
   music.addEventListener("play", () => setMusicUi(true));
   music.addEventListener("pause", () => setMusicUi(false));
-  musicBtn.addEventListener("click", () => {
-    if (music.paused) playMusic();
-    else music.pause();
+  musicBtn.addEventListener("click", () => (music.paused ? playMusic() : music.pause()));
+
+  // Se pausa al salir de la invitación (por ejemplo, al abrir el formulario) y vuelve al regresar
+  let pausedByHide = false;
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && !music.paused) { pausedByHide = true; music.pause(); }
+    else if (!document.hidden && pausedByHide) { pausedByHide = false; playMusic(); }
   });
 
   /* ---------- Intro: entrar con o sin música ---------- */
-  const root = document.documentElement;
   const intro = document.getElementById("intro");
   root.classList.add("is-intro");
   intro.querySelectorAll("[data-music]").forEach((btn) => {
@@ -159,92 +219,8 @@
       setTimeout(() => intro.remove(), 900);
     });
   });
-  // Se pausa al salir de la invitación (por ejemplo, al abrir el formulario) y vuelve al regresar
-  let pausedByHide = false;
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden && !music.paused) { pausedByHide = true; music.pause(); }
-    else if (!document.hidden && pausedByHide) { pausedByHide = false; playMusic(); }
-  });
 
-  /* ---------- Silbato de árbitro (sintetizado, sin archivo) ---------- */
-  let audioCtx;
-  const whistle = () => {
-    const Ctx = window.AudioContext || window.webkitAudioContext;
-    if (!Ctx) return;
-    audioCtx = audioCtx || new Ctx();
-    if (audioCtx.state === "suspended") audioCtx.resume();
-    const ctx = audioCtx;
-    const out = ctx.createGain();
-    out.gain.value = 0.32;
-    out.connect(ctx.destination);
-
-    // Un "piiip": tono agudo con el trino de la bolita del silbato y un poco de aire
-    const blow = (start, length) => {
-      const t0 = ctx.currentTime + start;
-      const t1 = t0 + length;
-      const env = ctx.createGain();
-      env.gain.setValueAtTime(0, t0);
-      env.gain.linearRampToValueAtTime(1, t0 + 0.02);
-      env.gain.setValueAtTime(1, t1 - 0.05);
-      env.gain.linearRampToValueAtTime(0, t1);
-      env.connect(out);
-
-      const tone = ctx.createOscillator();
-      tone.type = "triangle";
-      tone.frequency.setValueAtTime(2750, t0);
-      tone.frequency.linearRampToValueAtTime(2900, t0 + 0.05);
-      const trill = ctx.createOscillator(); // la bolita que vibra
-      trill.frequency.value = 32;
-      const trillDepth = ctx.createGain();
-      trillDepth.gain.value = 170;
-      trill.connect(trillDepth).connect(tone.frequency);
-      const tremolo = ctx.createGain();
-      tremolo.gain.value = 0.75;
-      const tremDepth = ctx.createGain();
-      tremDepth.gain.value = 0.25;
-      trill.connect(tremDepth).connect(tremolo.gain);
-      tone.connect(tremolo).connect(env);
-
-      const second = ctx.createOscillator(); // armónico que le da el brillo metálico
-      second.type = "sine";
-      second.frequency.setValueAtTime(5600, t0);
-      const secondGain = ctx.createGain();
-      secondGain.gain.value = 0.12;
-      second.connect(secondGain).connect(env);
-
-      const noise = ctx.createBufferSource(); // soplido
-      const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * length), ctx.sampleRate);
-      const data = buf.getChannelData(0);
-      for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
-      noise.buffer = buf;
-      const band = ctx.createBiquadFilter();
-      band.type = "bandpass";
-      band.frequency.value = 2900;
-      band.Q.value = 3;
-      const noiseGain = ctx.createGain();
-      noiseGain.gain.value = 0.18;
-      noise.connect(band).connect(noiseGain).connect(env);
-
-      [tone, trill, second, noise].forEach((n) => { n.start(t0); n.stop(t1 + 0.02); });
-    };
-    blow(0, 0.16);
-    blow(0.26, 0.6);
-  };
-
-  /* ---------- Confirmar asistencia: suena el silbato y después abre el formulario ---------- */
-  const rsvpBtn = document.getElementById("boton-confirmar");
-  rsvpBtn.addEventListener("click", (event) => {
-    whistle();
-    const href = rsvpBtn.getAttribute("href");
-    if (href === "#") return; // sin link personal: se muestra el aviso de abajo
-    event.preventDefault();
-    setTimeout(() => {
-      const win = window.open(href, "_blank", "noreferrer");
-      if (!win) location.href = href; // si el celular bloquea la pestaña nueva, abre en la misma
-    }, 750);
-  });
-
-  /* ---------- Enlaces que todavía no tienen destino ---------- */
+  /* ---------- Confirmar asistencia sin link personal ---------- */
   document.querySelectorAll("[data-pending]").forEach((link) => {
     link.addEventListener("click", (event) => {
       if (link.getAttribute("href") !== "#") return;
@@ -256,13 +232,12 @@
   /* ---------- Modal Cómo llegar ---------- */
   const modal = document.getElementById("locationModal");
   const stage = modal.querySelector(".img-modal__stage");
-  const CARD = [9, 27.2, 91, 71.4]; // x1, y1, x2, y2 de la tarjeta en %
+  const CARD = [9, 28.9, 91, 79.5]; // tarjeta dentro del diseño, en %: x1, y1, x2, y2
+  const openModal = () => (typeof modal.showModal === "function" ? modal.showModal() : modal.setAttribute("open", ""));
   const closeModal = () => (typeof modal.close === "function" ? modal.close() : modal.removeAttribute("open"));
-  document.getElementById("openLocation").addEventListener("click", () => {
-    if (typeof modal.showModal === "function") modal.showModal();
-    else modal.setAttribute("open", "");
-  });
+  document.getElementById("openLocation").addEventListener("click", openModal);
   modal.querySelector("[data-close]").addEventListener("click", closeModal);
+  // Tocar fuera de la tarjeta la cierra
   modal.addEventListener("click", (event) => {
     if (event.target.closest(".img-modal__hit")) return;
     const r = stage.getBoundingClientRect();
